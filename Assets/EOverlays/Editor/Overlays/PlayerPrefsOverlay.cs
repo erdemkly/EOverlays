@@ -102,13 +102,7 @@ namespace EOverlays.Editor.Overlays
             if (_init) return;
             _init = true;
 
-            _root = new GroupBox
-            {
-                style =
-                {
-                    width = 200
-                }
-            };
+            _root = new VisualElement();
 
             _prefsTypeElement = new EnumField(PlayerPrefsType.Float);
             _root.Add(_prefsTypeElement);
@@ -158,7 +152,7 @@ namespace EOverlays.Editor.Overlays
             SetValueByPrefsType(_ppt,FetchPlayerPrefsValue(_ppt, _playerPrefsNameField.value));
         }
 
-        [EOverlayElement()]
+        [EOverlayElement("Player Prefs")]
         public static VisualElement CreateOverlay()
         {
             Init();

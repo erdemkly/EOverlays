@@ -9,7 +9,7 @@ namespace EOverlays.Editor.Overlays
 {
     public abstract class EOverlayBase
     {
-        public static List<VisualElement> AllVisualElements()
+        public static Dictionary<VisualElement, string> AllVisualElements()
         {
             //Find classes those inherited from EOverlayBase
             IEnumerable<Type> allEOverlayClasses = typeof(EOverlayBase).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(EOverlayBase)));
@@ -26,11 +26,13 @@ namespace EOverlays.Editor.Overlays
                 .OrderBy(x => ((EOverlayElementAttribute)x.GetCustomAttribute(typeof(EOverlayElementAttribute))).Order);
 
             //Convert methodinfo to visual element
-            var result = new List<VisualElement>();
+            var result = new Dictionary<VisualElement, string>();
             foreach (var method in orderedMethods)
             {
-                if (method.Invoke(new object(), new object[] { }) is not VisualElement visualElement) continue;
-                result.Add(visualElement);
+                if (method.Invoke(new object(), new object[]
+                        { }) is not VisualElement visualElement) continue;
+                var name = ((EOverlayElementAttribute)method.GetCustomAttribute(typeof(EOverlayElementAttribute))).Name;
+                result.Add(visualElement, name);
             }
 
 

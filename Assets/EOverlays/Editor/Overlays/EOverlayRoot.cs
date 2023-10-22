@@ -28,10 +28,14 @@ namespace EOverlays.Editor.Overlays
         {
             FetchAllOverlays();
             var root = new VisualElement();
+            root.style.width = 300;
             var allVisualElements = EOverlayBase.AllVisualElements();
             foreach (var visualElement in allVisualElements)
             {
-                root.Add(visualElement);
+                var foldOut = new Foldout();
+                foldOut.text = visualElement.Value;
+                foldOut.Add(visualElement.Key);
+                root.Add(foldOut);
             }
             return root;
         }

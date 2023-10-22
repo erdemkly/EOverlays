@@ -5,8 +5,10 @@ namespace EOverlays.Editor.Attributes
     public class EOverlayElementAttribute : Attribute
     {
         public readonly int Order;
-        public EOverlayElementAttribute(int order = 0)
+        public readonly string Name;
+        public EOverlayElementAttribute(string name, int order = 0)
         {
+            Name = name;
             Order = order;
         }
     }
