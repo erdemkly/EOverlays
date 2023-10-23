@@ -25,13 +25,15 @@ namespace Packages.eoverlays.Editor.Overlays
             var root = new VisualElement();
             root.style.width = 300;
             var allVisualElements = EOverlayBase.AllVisualElements();
-            foreach (var visualElement in allVisualElements)
+            foreach ((var visualElement, var name) in allVisualElements)
             {
-                var foldOut = new Foldout();
+                var foldOut = root.Q<Foldout>($"{name}");
+                foldOut ??= new Foldout();
+                foldOut.name = name;
+                foldOut.text = name;
                 var groupBox = new GroupBox();
                 groupBox.style.backgroundColor = new StyleColor(new Color(0.15f, 0.15f, 0.15f, 0.53f));
-                foldOut.text = visualElement.Value;
-                groupBox.Add(visualElement.Key);
+                groupBox.Add(visualElement);
                 foldOut.Add(groupBox);
                 root.Add(foldOut);
             }

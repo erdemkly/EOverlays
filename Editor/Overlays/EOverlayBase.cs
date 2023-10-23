@@ -3,10 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using EOverlays.Editor.Attributes;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 namespace Packages.eoverlays.Editor.Overlays
 {
+    public class MethodParameterPair
+    {
+        public MethodInfo MethodInfo;
+        public object[] Parameters;
+        public MethodParameterPair(MethodInfo methodInfo, object[] parameters)
+        {
+            MethodInfo = methodInfo;
+            Parameters = parameters;
+        }
+    }
     public abstract class EOverlayBase
     {
         internal static Dictionary<VisualElement, string> AllVisualElements()
@@ -30,8 +41,48 @@ namespace Packages.eoverlays.Editor.Overlays
             var result = new Dictionary<VisualElement, string>();
             foreach (var method in orderedMethods)
             {
-                if (method.Invoke(new object(), new object[]
-                        { }) is not VisualElement visualElement) continue;
+                VisualElement visualElement;
+                if (method.ReturnType != typeof(VisualElement))
+                {
+                    visualElement = new GroupBox();
+                    var parameters = method.GetParameters();
+                    var methodParameterPair = new MethodParameterPair(method, new object[parameters.Length]);
+                    for (var i = 0; i < parameters.Length; i++)
+                    {
+                        var parameter = parameters[i];
+                        var paramElement = parameter.ParameterType.GetVisualElementByType(methodParameterPair, i);
+                        paramElement.name = $"param-id-{i}";
+                        visualElement.Add(paramElement);
+                    }
+
+                    var invokeButton = new Button();
+                    invokeButton.text = method.Name;
+                    invokeButton.RegisterCallback<ClickEvent>((_) =>
+                    {
+                        var returnMethod = method.Invoke(new object(), methodParameterPair.Parameters);
+                        if (method.ReturnType != typeof(void))
+                        {
+                            var resultElement = visualElement.Children().FirstOrDefault(x => x.name == "return-value");
+                            if (resultElement != null)
+                            {
+                                visualElement.Remove(resultElement);
+                            }
+                            resultElement = method.ReturnType.GetVisualElementByTypeWithValue(returnMethod);
+                            resultElement.name = "return-value";
+                            resultElement.SetEnabled(false);
+                            visualElement.Add(resultElement);
+                        }
+                    });
+
+
+                    visualElement.Add(invokeButton);
+                }
+                else
+                {
+                    visualElement = method.Invoke(new object(), new object[]
+                        { }) as VisualElement;
+                }
+
                 var name = ((EOverlayElementAttribute)method.GetCustomAttribute(typeof(EOverlayElementAttribute))).Name;
                 result.Add(visualElement, name);
             }
