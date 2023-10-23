@@ -6,6 +6,7 @@ namespace Packages.eoverlays.Editor.Overlays
 {
     public class TimeOverlay : EOverlayBase
     {
+        private static bool _active;
         private static bool _init;
         private static VisualElement _root;
         [EOverlayElement("Time")]
@@ -16,19 +17,21 @@ namespace Packages.eoverlays.Editor.Overlays
             _root = new VisualElement();
             var timeScaleToggle = new Toggle("Active");
             var timeScaleSlider = new Slider();
+            timeScaleSlider.showInputField = true;
 
 
 
             void SetSliderValue(float value)
             {
-                timeScaleSlider.label = value.ToString(CultureInfo.InvariantCulture);
                 Time.timeScale = value;
             }
 
             void SetSliderActive(bool active)
             {
+                timeScaleSlider.SetEnabled(active);
                 timeScaleSlider.style.opacity = active ? 1 : 0.5f;
                 Time.timeScale = active ? timeScaleSlider.value : 1;
+                _active = active;
             }
 
 
