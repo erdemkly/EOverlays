@@ -22,14 +22,14 @@ namespace Packages.eoverlays.Editor.Overlays
         }
         public override VisualElement CreatePanelContent()
         {
-            var root = new GroupBox()
+            var root = new ScrollView()
             {
+                mode = ScrollViewMode.Vertical,
+                verticalScrollerVisibility = ScrollerVisibility.AlwaysVisible,
                 style =
                 {
                     width = 300,
-                    flexGrow = 1,
-                    flexShrink = 1,
-                    minHeight = 1000,
+                    maxHeight = 400
                 }
             };
             var allVisualElements = EOverlayBase.AllVisualElements();

@@ -55,19 +55,14 @@ namespace Packages.eoverlays.Editor.Overlays
                         var paramGroup = new GroupBox()
                         {
                             style =
-                            {
+                            { 
+                                backgroundColor = new StyleColor(new Color(0.49f, 0.49f, 0.49f, 0.47f)),
                                 flexDirection = FlexDirection.Column,
                                 flexGrow = 0,
                                 flexShrink = 1,
                             },
                         };
-                        paramGroup.Add(new Label(parameter.Name)
-                        {
-                            style =
-                            {
-                                backgroundColor = new StyleColor(Color.gray)
-                            }
-                        });
+                        paramGroup.Add(new Label(parameter.Name));
                         var paramElement = parameter.ParameterType.GetVisualElementByType(methodParameterPair, i);
                         paramGroup.Add(paramElement);
                         visualElement.Add(paramGroup);
