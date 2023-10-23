@@ -42,6 +42,8 @@ namespace Packages.eoverlays.Editor.Overlays
             foreach (var method in orderedMethods)
             {
                 VisualElement visualElement;
+
+                //Method visualization
                 if (method.ReturnType != typeof(VisualElement))
                 {
                     visualElement = new GroupBox();
@@ -50,9 +52,25 @@ namespace Packages.eoverlays.Editor.Overlays
                     for (var i = 0; i < parameters.Length; i++)
                     {
                         var parameter = parameters[i];
+                        var paramGroup = new GroupBox()
+                        {
+                            style =
+                            {
+                                flexDirection = FlexDirection.Column,
+                                flexGrow = 0,
+                                flexShrink = 1,
+                            },
+                        };
+                        paramGroup.Add(new Label(parameter.Name)
+                        {
+                            style =
+                            {
+                                backgroundColor = new StyleColor(Color.gray)
+                            }
+                        });
                         var paramElement = parameter.ParameterType.GetVisualElementByType(methodParameterPair, i);
-                        paramElement.name = $"param-id-{i}";
-                        visualElement.Add(paramElement);
+                        paramGroup.Add(paramElement);
+                        visualElement.Add(paramGroup);
                     }
 
                     var invokeButton = new Button();

@@ -213,53 +213,5 @@ namespace Packages.eoverlays.Editor.Overlays
             }
             return null;
         }
-        public static Type GetVisualElementTypeByObjectType(this Type type)
-        {
-            if (type == typeof(int))
-            {
-                return typeof(IntegerField);
-            }
-            if (type == typeof(float))
-            {
-                return typeof(FloatField);
-            }
-            if (type == typeof(double))
-            {
-                return typeof(DoubleField);
-            }
-            if (type == typeof(long))
-            {
-                return typeof(LongField);
-            }
-            if (type == typeof(Enum))
-            {
-                return typeof(EnumField);
-            }
-            if (type == typeof(object))
-            {
-                return typeof(ObjectField);
-            }
-            if (type == typeof(Vector2))
-            {
-                return typeof(Vector2Field);
-            }
-            if (type == typeof(Vector3))
-            {
-                return typeof(Vector3Field);
-            }
-            if (type == typeof(Vector2Int))
-            {
-                return typeof(Vector2IntField);
-            }
-            if (type == typeof(Vector3Int))
-            {
-                return typeof(Vector3IntField);
-            }
-            if (type == typeof(string))
-            {
-                return typeof(TextField);
-            }
-            return null;
-        }
     }
 }

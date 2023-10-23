@@ -22,21 +22,32 @@ namespace Packages.eoverlays.Editor.Overlays
         }
         public override VisualElement CreatePanelContent()
         {
-            var root = new VisualElement();
-            root.style.width = 300;
+            var root = new GroupBox()
+            {
+                style =
+                {
+                    width = 300,
+                    flexGrow = 1,
+                    flexShrink = 1,
+                    minHeight = 1000,
+                }
+            };
             var allVisualElements = EOverlayBase.AllVisualElements();
             foreach ((var visualElement, var name) in allVisualElements)
             {
                 var foldOut = root.Q<Foldout>($"{name}");
-                foldOut ??= new Foldout();
-                foldOut.name = name;
-                foldOut.text = name;
+                foldOut ??= new Foldout()
+                {
+                    name = name,
+                    text = name,
+                };
                 var groupBox = new GroupBox();
                 groupBox.style.backgroundColor = new StyleColor(new Color(0.15f, 0.15f, 0.15f, 0.53f));
                 groupBox.Add(visualElement);
                 foldOut.Add(groupBox);
                 root.Add(foldOut);
             }
+            
             return root;
         }
 
