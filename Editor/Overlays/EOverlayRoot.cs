@@ -28,8 +28,11 @@ namespace Packages.eoverlays.Editor.Overlays
             foreach (var visualElement in allVisualElements)
             {
                 var foldOut = new Foldout();
+                var groupBox = new GroupBox();
+                groupBox.style.backgroundColor = new StyleColor(new Color(0.15f, 0.15f, 0.15f, 0.53f));
                 foldOut.text = visualElement.Value;
-                foldOut.Add(visualElement.Key);
+                groupBox.Add(visualElement.Key);
+                foldOut.Add(groupBox);
                 root.Add(foldOut);
             }
             return root;
