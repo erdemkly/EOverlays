@@ -1,9 +1,8 @@
 using System.Globalization;
 using EOverlays.Editor.Attributes;
-using NUnit.Framework.Internal;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace EOverlays.Editor.Overlays
+namespace Packages.eoverlays.Editor.Overlays
 {
     public class TimeOverlay : EOverlayBase
     {

@@ -5,17 +5,18 @@ using System.Reflection;
 using EOverlays.Editor.Attributes;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace EOverlays.Editor.Overlays
+namespace Packages.eoverlays.Editor.Overlays
 {
     public abstract class EOverlayBase
     {
-        public static Dictionary<VisualElement, string> AllVisualElements()
+        internal static Dictionary<VisualElement, string> AllVisualElements()
         {
             //Find classes those inherited from EOverlayBase
             IEnumerable<Type> allEOverlayClasses = typeof(EOverlayBase).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(EOverlayBase)));
             var methods = new List<MethodInfo>();
             foreach (var type in allEOverlayClasses)
             {
+                Debug.LogWarning(type.FullName);
                 var overlayMethods = type.GetMethods()
                     .Where(method => method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute))).ToList();
                 methods.AddRange(overlayMethods);

@@ -1,13 +1,9 @@
-using System;
-using System.Linq;
-using System.Reflection;
-using EOverlays.Editor.Attributes;
 using EOverlays.Editor.ScriptableObjects;
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace EOverlays.Editor.Overlays
+namespace Packages.eoverlays.Editor.Overlays
 {
     [Overlay(typeof(SceneView), "E-Overlay", true)]
     public class EOverlayRoot : Overlay
@@ -26,7 +22,6 @@ namespace EOverlays.Editor.Overlays
         }
         public override VisualElement CreatePanelContent()
         {
-            FetchAllOverlays();
             var root = new VisualElement();
             root.style.width = 300;
             var allVisualElements = EOverlayBase.AllVisualElements();
@@ -40,9 +35,5 @@ namespace EOverlays.Editor.Overlays
             return root;
         }
 
-        private void FetchAllOverlays()
-        {
-            EOverlayBase.AllVisualElements();
-        }
     }
 }

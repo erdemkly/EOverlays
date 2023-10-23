@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
 using EOverlays.Editor.Attributes;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.Overlays;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace EOverlays.Editor.Overlays
+namespace Packages.eoverlays.Editor.Overlays
 {
     public class PlayerPrefsOverlay : EOverlayBase
     {
