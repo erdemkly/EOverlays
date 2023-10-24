@@ -3,7 +3,7 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
-namespace Packages.eoverlays.Editor.Overlays
+namespace Editor.Overlays
 {
     public static class EOverlayUtilities
     {

@@ -3,7 +3,7 @@ using EOverlays.Editor.Attributes;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace Packages.eoverlays.Editor.Overlays
+namespace Editor.Overlays
 {
     public class PlayerPrefsOverlay
     {

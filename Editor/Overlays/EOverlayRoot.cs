@@ -3,7 +3,7 @@ using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace Packages.eoverlays.Editor.Overlays
+namespace Editor.Overlays
 {
     [Overlay(typeof(SceneView), "E-Overlay", true)]
     public class EOverlayRoot : Overlay
