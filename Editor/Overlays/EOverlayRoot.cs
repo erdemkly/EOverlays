@@ -32,7 +32,7 @@ namespace Packages.eoverlays.Editor.Overlays
                     maxHeight = 400
                 }
             };
-            var allVisualElements = EOverlayBase.AllVisualElements();
+            var allVisualElements = EOverlayMethods.AllVisualElements();
             foreach ((var visualElement, var name) in allVisualElements)
             {
                 var foldOut = root.Q<Foldout>($"{name}");

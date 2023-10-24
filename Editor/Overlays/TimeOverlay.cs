@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 namespace Packages.eoverlays.Editor.Overlays
 {
-    public class TimeOverlay : EOverlayBase
+    public class TimeOverlay
     {
         private static bool _active;
         private static bool _init;

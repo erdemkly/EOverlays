@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using EOverlays.Editor.Attributes;
-using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace Packages.eoverlays.Editor.Overlays
+namespace Editor.Overlays
 {
     public class MethodParameterPair
     {
@@ -18,12 +17,12 @@ namespace Packages.eoverlays.Editor.Overlays
             Parameters = parameters;
         }
     }
-    public abstract class EOverlayBase
+    public static class EOverlayMethods
     {
         internal static Dictionary<VisualElement, string> AllVisualElements()
         {
             //Find classes those inherited from EOverlayBase
-            IEnumerable<Type> allEOverlayClasses = typeof(EOverlayBase).Assembly.GetTypes().Where(type => type.IsSubclassOf(typeof(EOverlayBase)));
+            IEnumerable<Type> allEOverlayClasses = typeof(EOverlayMethods).Assembly.GetTypes();
             var methods = new List<MethodInfo>();
             foreach (var type in allEOverlayClasses)
             {

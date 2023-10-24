@@ -5,7 +5,7 @@ using UnityEngine;
 using UnityEngine.UIElements;
 namespace Packages.eoverlays.Editor.Overlays
 {
-    public class PlayerPrefsOverlay : EOverlayBase
+    public class PlayerPrefsOverlay
     {
         #region Enums
 
