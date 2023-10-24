@@ -86,8 +86,6 @@ namespace Editor.Overlays
 
         private static PlayerPrefsType _ppt;
 
-        private static Button _btnSet;
-        private static Label _resultLabel;
         private static VisualElement _playerPrefsValueField;
         private static TextField _playerPrefsNameField;
         private static VisualElement _root;
@@ -130,18 +128,39 @@ namespace Editor.Overlays
             _playerPrefsValueField = GetVisualElementByPrefsType(_ppt);
             _root.Add(_playerPrefsValueField);
 
-            _btnSet = new Button(() =>
+            var btnGroup = new GroupBox()
+            {
+                style =
+                {
+                    flexDirection = FlexDirection.Row,
+                    flexGrow = 1,
+                    flexShrink = 1,
+                    alignSelf = Align.Center,
+                    alignItems = Align.Stretch
+                },
+            };
+            
+            var btnSet = new Button(() =>
             {
                 SetPlayerPrefs(_ppt, _playerPrefsNameField.value, GetVisualElementValueByPrefsType(_ppt));
                 Debug.Log($"{_playerPrefsNameField.value} new value: {FetchPlayerPrefsValue(_ppt, _playerPrefsNameField.value)}");
                 Refresh();
             });
-            _btnSet.Add(new Label("Set"));
-            _root.Add(_btnSet);
+            btnSet.Add(new Label("Set"));
+            btnGroup.Add(btnSet);
+            
+            var btnClearAll = new Button(()=>
+            {
+                PlayerPrefs.DeleteAll();
+                Debug.Log("Deleted all player prefs.");
+                Refresh();
+            });
+            btnClearAll.Add(new Label("Clear All Prefs"));
+            btnGroup.Add(btnClearAll);
+            
+            _root.Add(btnGroup);
 
 
-            _resultLabel = new Label();
-            _root.Add(_resultLabel);
         }
 
         private static void Refresh()
