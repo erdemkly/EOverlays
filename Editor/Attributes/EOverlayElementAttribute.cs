@@ -6,8 +6,10 @@ namespace Editor.Attributes
     {
         public readonly int Order;
         public readonly string Name;
-        public EOverlayElementAttribute(string name, int order = 0)
+        public string EnableCondition;
+        public EOverlayElementAttribute(string name, int order = 0, string enableCondition = null)
         {
+            EnableCondition = enableCondition;
             Name = name;
             Order = order;
         }

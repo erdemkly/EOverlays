@@ -41,6 +41,7 @@ namespace Editor.Overlays
             foreach (var method in orderedMethods)
             {
                 VisualElement visualElement;
+                var attribute = ((EOverlayElementAttribute)method.GetCustomAttribute(typeof(EOverlayElementAttribute)));
 
                 //Method visualization
                 if (method.ReturnType != typeof(VisualElement))
@@ -54,7 +55,7 @@ namespace Editor.Overlays
                         var paramGroup = new GroupBox()
                         {
                             style =
-                            { 
+                            {
                                 backgroundColor = new StyleColor(new Color(0.49f, 0.49f, 0.49f, 0.47f)),
                                 flexDirection = FlexDirection.Column,
                                 flexGrow = 0,
@@ -95,7 +96,18 @@ namespace Editor.Overlays
                         { }) as VisualElement;
                 }
 
-                var name = ((EOverlayElementAttribute)method.GetCustomAttribute(typeof(EOverlayElementAttribute))).Name;
+                if (attribute.EnableCondition != null && method.DeclaringType != null)
+                {
+                    var property = method.DeclaringType.GetProperty(attribute.EnableCondition);
+                    if (property != null && property.GetMethod.ReturnType == typeof(bool))
+                    {
+                        var enabled = (bool)property.GetMethod.Invoke(new object(), new object[] { });
+                        if (!enabled) continue;
+                    }
+                }
+
+                var name = attribute.Name;
+                if (visualElement == null) continue;
                 result.Add(visualElement, name);
             }
 

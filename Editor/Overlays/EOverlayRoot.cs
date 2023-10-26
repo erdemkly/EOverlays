@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Editor.Attributes;
 using EOverlays.Editor.ScriptableObjects;
 using UnityEditor;
 using UnityEditor.Overlays;
@@ -20,35 +24,105 @@ namespace Editor.Overlays
                 return _settings;
             }
         }
+        private static VisualElement _root;
+        private static VisualElement _content;
+        private static HashSet<VisualElement> _allContents;
+        private static VisualElement _navigationBar;
+        private static string _selectedNavigationElement;
+        private static Action<string> _selectTabAction;
         public override VisualElement CreatePanelContent()
         {
-            var root = new ScrollView()
+            _root.Clear();
+            _content.Clear();
+            _allContents = new HashSet<VisualElement>();
+
+            var allVisualElements = EOverlayMethods.AllVisualElements();
+
+            _navigationBar ??= new GroupBox()
             {
-                mode = ScrollViewMode.Vertical,
+                focusable = false,
+                style =
+                {
+                    minHeight = allVisualElements.Count*100,
+                    flexDirection = FlexDirection.Column,
+                },
+
+            };
+            _root.Add(_navigationBar);
+
+            _root.Add(_content);
+            foreach ((var visualElement, var name) in allVisualElements)
+            {
+
+                VisualElement groupBox = _allContents.FirstOrDefault(x => x.name == name);
+                groupBox ??= new GroupBox()
+                {
+                    name = name,
+                };
+                groupBox.style.backgroundColor = new StyleColor(new Color(0.15f, 0.15f, 0.15f, 0.53f));
+                groupBox.Add(visualElement);
+
+                _allContents.Add(groupBox);
+
+
+                var navigationButton = _root.Q<Button>($"{name}");
+                if (navigationButton != null) continue;
+                navigationButton = new Button(()=>SelectTab(name))
+                {
+                    name = name,    
+                    text = name,
+                };
+                
+                _selectTabAction += (n) =>
+                {
+                    navigationButton.style.opacity = n == name ? 0.8f : 1f;
+                    navigationButton.style.color = n == name ? Color.green : Color.white;
+                };
+                _navigationBar.Add(navigationButton);
+            }
+            SelectTab(_selectedNavigationElement);
+            return _root;
+        }
+        private void OndisplayedChanged(bool obj)
+        {
+            Debug.LogError(obj);
+        }
+        private void SelectTab(string name)
+        {
+            var element = _allContents.FirstOrDefault(x => x.name == name);
+            if (element == null) element = _allContents.First();
+            _content.Clear();
+            _content.Add(element);
+            _selectedNavigationElement = name;
+            _selectTabAction?.Invoke(element.name);
+        }
+        public override void OnCreated()
+        {
+            base.OnCreated();
+            Selection.selectionChanged += SelectionChanged;
+            _root = new GroupBox()
+            {
+                style =
+                {
+                    maxHeight = 400,
+                    flexDirection = FlexDirection.Row
+                }
+            };
+            _content = new ScrollView()
+            {
                 verticalScrollerVisibility = ScrollerVisibility.AlwaysVisible,
+                mode = ScrollViewMode.Vertical,
                 style =
                 {
                     width = 300,
-                    maxHeight = 400
+                    maxHeight = 400,
                 }
             };
-            var allVisualElements = EOverlayMethods.AllVisualElements();
-            foreach ((var visualElement, var name) in allVisualElements)
-            {
-                var foldOut = root.Q<Foldout>($"{name}");
-                foldOut ??= new Foldout()
-                {
-                    name = name,
-                    text = name,
-                };
-                var groupBox = new GroupBox();
-                groupBox.style.backgroundColor = new StyleColor(new Color(0.15f, 0.15f, 0.15f, 0.53f));
-                groupBox.Add(visualElement);
-                foldOut.Add(groupBox);
-                root.Add(foldOut);
-            }
-            
-            return root;
+
+        }
+        private void SelectionChanged()
+        {
+            CreatePanelContent();
         }
 
     }
