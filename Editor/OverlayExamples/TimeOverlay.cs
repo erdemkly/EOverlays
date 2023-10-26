@@ -5,7 +5,6 @@ namespace EOverlays.Editor.OverlayExamples
 {
     public class TimeOverlay
     {
-        private static bool _active;
         private static bool _init;
         private static VisualElement _root;
         [EOverlayElement("Time")]
@@ -15,22 +14,24 @@ namespace EOverlays.Editor.OverlayExamples
             _init = true;
             _root = new VisualElement();
             var timeScaleToggle = new Toggle("Active");
+            var fixedDeltaTimeToggle = new Toggle("Include Fixed Delta Time");
             var timeScaleSlider = new Slider();
             timeScaleSlider.showInputField = true;
 
 
 
-            void SetSliderValue(float value)
+            void SetTime(float value)
             {
                 Time.timeScale = value;
+                if (fixedDeltaTimeToggle.value) Time.fixedDeltaTime = value*0.02f;
+
             }
 
             void SetSliderActive(bool active)
             {
                 timeScaleSlider.SetEnabled(active);
                 timeScaleSlider.style.opacity = active ? 1 : 0.5f;
-                Time.timeScale = active ? timeScaleSlider.value : 1;
-                _active = active;
+                SetTime(active ? timeScaleSlider.value : 1);
             }
 
 
@@ -42,11 +43,10 @@ namespace EOverlays.Editor.OverlayExamples
             timeScaleSlider.RegisterValueChangedCallback((callback) =>
             {
                 var newValue = callback.newValue;
-                SetSliderValue(newValue);
+                SetTime(newValue);
             });
 
             SetSliderActive(false);
-            SetSliderValue(Time.timeScale);
             timeScaleSlider.value = Time.timeScale;
 
             _root.Add(timeScaleToggle);
