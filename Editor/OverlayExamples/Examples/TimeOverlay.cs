@@ -50,6 +50,7 @@ namespace EOverlays.Editor.OverlayExamples
             timeScaleSlider.value = Time.timeScale;
 
             _root.Add(timeScaleToggle);
+            _root.Add(fixedDeltaTimeToggle);
             _root.Add(timeScaleSlider);
 
             return _root;

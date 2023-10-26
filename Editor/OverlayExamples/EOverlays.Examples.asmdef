@@ -1,0 +1,18 @@
+{
+    "name": "EOverlays.Examples",
+    "rootNamespace": "",
+    "references": [
+        "GUID:5ce2c1d314811e44fa0669ea8479e12c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

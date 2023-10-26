@@ -21,8 +21,11 @@ namespace EOverlays.Editor.Core
     {
         internal static Dictionary<VisualElement, string> AllVisualElements()
         {
+            var result = new Dictionary<VisualElement, string>();
+
             //Find classes those inherited from EOverlayBase
-            IEnumerable<Type> allEOverlayClasses = typeof(EOverlayMethods).Assembly.GetTypes();
+            var allEOverlayClasses = typeof(EOverlayMethods).Assembly.GetTypes();
+
             var methods = new List<MethodInfo>();
             foreach (var type in allEOverlayClasses)
             {
@@ -37,7 +40,6 @@ namespace EOverlays.Editor.Core
                 .OrderBy(x => ((EOverlayElementAttribute)x.GetCustomAttribute(typeof(EOverlayElementAttribute))).Order);
 
             //Convert methodinfo to visual element
-            var result = new Dictionary<VisualElement, string>();
             foreach (var method in orderedMethods)
             {
                 VisualElement visualElement;
@@ -47,7 +49,7 @@ namespace EOverlays.Editor.Core
                 if (method.ReturnType != typeof(VisualElement))
                 {
                     visualElement = new GroupBox();
-                    
+
                     //Method parameters visualization
                     var parameters = method.GetParameters();
                     var methodParameterPair = new MethodParameterPair(method, new object[parameters.Length]);
@@ -104,7 +106,8 @@ namespace EOverlays.Editor.Core
                     var property = method.DeclaringType.GetProperty(attribute.EnableCondition);
                     if (property != null && property.GetMethod.ReturnType == typeof(bool))
                     {
-                        var enabled = (bool)property.GetMethod.Invoke(new object(), new object[] { });
+                        var enabled = (bool)property.GetMethod.Invoke(new object(), new object[]
+                            { });
                         if (!enabled) continue;
                     }
                 }
@@ -114,6 +117,10 @@ namespace EOverlays.Editor.Core
                 result.Add(visualElement, name);
             }
 
+            if (!result.Any())
+            {
+                result.Add(new Label("Add new overlay to show in this place."), "NONE");
+            }
 
             return result;
 
