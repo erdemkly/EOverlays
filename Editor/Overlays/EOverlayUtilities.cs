@@ -108,6 +108,15 @@ namespace Editor.Overlays
                 });
                 return field;
             }
+            if (type == typeof(Color))
+            {
+                var field = new ColorField();
+                field.RegisterValueChangedCallback((callback) =>
+                {
+                    pair.Parameters[index] = callback.newValue;
+                });
+                return field;
+            }
             return null;
         }
         public static VisualElement GetVisualElementByTypeWithValue(this Type type, object value)
@@ -157,7 +166,7 @@ namespace Editor.Overlays
 
                 return field;
             }
-            if (type == typeof(object))
+            if (type == typeof(Object))
             {
                 var field = new ObjectField
                 {
@@ -207,6 +216,15 @@ namespace Editor.Overlays
                 var field = new TextField
                 {
                     value = (string)value
+                };
+
+                return field;
+            }
+            if (type == typeof(Color))
+            {
+                var field = new ColorField()
+                {
+                    value = (Color)value
                 };
 
                 return field;
