@@ -15,7 +15,7 @@
     "email": "erdemkalay@icloud.com",
     "url": ""
   },
-  "EOverlaySamples": [
+  "samples": [
     {
       "displayName": "EOverlay Samples",
       "description": "Contains sample EOverlay overlays",
