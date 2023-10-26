@@ -38,16 +38,7 @@ namespace Editor.Overlays
 
             var allVisualElements = EOverlayMethods.AllVisualElements();
 
-            _navigationBar ??= new GroupBox()
-            {
-                focusable = false,
-                style =
-                {
-                    minHeight = allVisualElements.Count*100,
-                    flexDirection = FlexDirection.Column,
-                },
-
-            };
+            
             _root.Add(_navigationBar);
 
             _root.Add(_content);
@@ -67,15 +58,15 @@ namespace Editor.Overlays
 
                 var navigationButton = _root.Q<Button>($"{name}");
                 if (navigationButton != null) continue;
-                navigationButton = new Button(()=>SelectTab(name))
+                navigationButton = new Button(() => SelectTab(name))
                 {
-                    name = name,    
+                    name = name,
                     text = name,
                 };
-                
+
                 _selectTabAction += (n) =>
                 {
-                    navigationButton.style.opacity = n == name ? 0.8f : 1f;
+                    navigationButton.SetEnabled(n != name);
                     navigationButton.style.color = n == name ? Color.green : Color.white;
                 };
                 _navigationBar.Add(navigationButton);
@@ -117,6 +108,17 @@ namespace Editor.Overlays
                     width = 300,
                     maxHeight = 400,
                 }
+            };
+            _navigationBar = new ScrollView()
+            {
+                focusable = false,
+                style =
+                {
+                    minHeight = 100,
+                    maxHeight = 400,
+                    flexDirection = FlexDirection.Column,
+                },
+
             };
 
         }
