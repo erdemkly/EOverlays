@@ -47,6 +47,8 @@ namespace Editor.Overlays
                 if (method.ReturnType != typeof(VisualElement))
                 {
                     visualElement = new GroupBox();
+                    
+                    //Method parameters visualization
                     var parameters = method.GetParameters();
                     var methodParameterPair = new MethodParameterPair(method, new object[parameters.Length]);
                     for (var i = 0; i < parameters.Length; i++)
@@ -68,6 +70,7 @@ namespace Editor.Overlays
                         visualElement.Add(paramGroup);
                     }
 
+                    //Create button to invoke method
                     var invokeButton = new Button();
                     invokeButton.text = method.Name;
                     invokeButton.RegisterCallback<ClickEvent>((_) =>

@@ -36,12 +36,16 @@ namespace Editor.Overlays
             _content.Clear();
             _allContents = new HashSet<VisualElement>();
 
-            var allVisualElements = EOverlayMethods.AllVisualElements();
 
             
             _root.Add(_navigationBar);
 
             _root.Add(_content);
+            
+            //Get all registered elements
+            var allVisualElements = EOverlayMethods.AllVisualElements();
+            
+            
             foreach ((var visualElement, var name) in allVisualElements)
             {
 
@@ -73,10 +77,6 @@ namespace Editor.Overlays
             }
             SelectTab(_selectedNavigationElement);
             return _root;
-        }
-        private void OndisplayedChanged(bool obj)
-        {
-            Debug.LogError(obj);
         }
         private void SelectTab(string name)
         {
