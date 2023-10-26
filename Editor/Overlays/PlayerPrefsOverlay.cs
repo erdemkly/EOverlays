@@ -1,5 +1,5 @@
 using System;
-using EOverlays.Editor.Attributes;
+using Editor.Attributes;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;

@@ -1,5 +1,5 @@
 using System;
-namespace EOverlays.Editor.Attributes
+namespace Editor.Attributes
 {
     [AttributeUsage(AttributeTargets.Method)]
     public class EOverlayElementAttribute : Attribute

@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using EOverlays.Editor.Attributes;
+using Editor.Attributes;
 using UnityEngine;
 using UnityEngine.UIElements;
 namespace Editor.Overlays
