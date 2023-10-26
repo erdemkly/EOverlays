@@ -1,29 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Editor.Attributes;
-using EOverlays.Editor.ScriptableObjects;
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace Editor.Overlays
+namespace EOverlays.Editor.Core
 {
     [Overlay(typeof(SceneView), "E-Overlay", true)]
     public class EOverlayRoot : Overlay
     {
-        private EOverlaysSettings _settings;
-        private EOverlaysSettings Settings
-        {
-            get
-            {
-                if (_settings == null)
-                {
-                    _settings = Resources.Load<EOverlaysSettings>("EOverlays Settings");
-                }
-                return _settings;
-            }
-        }
         private static VisualElement _root;
         private static VisualElement _content;
         private static HashSet<VisualElement> _allContents;

@@ -1,9 +1,9 @@
 using System;
-using Editor.Attributes;
+using EOverlays.Editor.Attributes;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-namespace Editor.Overlays
+namespace EOverlays.Editor.OverlayExamples
 {
     public class PlayerPrefsOverlay
     {
