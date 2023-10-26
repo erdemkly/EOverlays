@@ -57,5 +57,11 @@ For now.
 public static Type MyMethod(Type a,Type b,Type c){}
 ```
 
+Also you can show your custom VisualElement.
+
+```csharp
+ [EOverlayElement(name:"Tab Name",order:0,enableCondition:"condition_variable_name")]
+public static VisualElement MyMethod(){}
+```
 
 
