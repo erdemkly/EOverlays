@@ -73,4 +73,42 @@ Also you can show your custom VisualElement.
 public static VisualElement MyMethod(){}
 ```
 
+#### Method Samples
 
+```csharp
+ [EOverlayElement(name:"Tab1")]
+    public static Color MixColors(Color myColor,Color secondaryColor)
+    {
+        return (myColor + secondaryColor)/2;
+    }
+```
+![Return Method](./Document~/methodReturn.png)
+
+```csharp
+  public static bool myBool { get => Selection.gameObjects.Length == 2; }
+    
+    [EOverlayElement(name: "Tab1", enableCondition: "myBool")]
+    public static float AngleOfSelectedObjects()
+    {
+        var from = Selection.gameObjects[0].transform.position;
+        var to = Selection.gameObjects[1].transform.position;
+        return Vector3.Angle(from, to);
+    }
+```
+![Return Method](./Document~/methodEnableCondition.png)
+
+```csharp
+  [EOverlayElement(name: "Tab1")]
+    public static VisualElement AngleOfSelectedObjects()
+    {
+        var root = new VisualElement();
+        root.Add(new Label("Dummy label"));
+        root.Add(new Slider("Dummy Slider", 0, 10));
+        root.Add(new Button()
+        {
+            text = "Dummy button"
+        });
+        return root;
+    }
+```
+![Return Method](./Document~/methodVisualElement.png)
