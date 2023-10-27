@@ -3,6 +3,12 @@
 EOverlays is a editor tool for Unity 3D game engine to write custom editor tools & utilities. 
 EOverlay uses Overlays at Unity (you can discover overlays from [this link](https://docs.unity3d.com/Manual/overlays.html)).
 
+#Support
+
+EOverlays is an open-source project that I am developing in my free time. If you like it you can support me by donating.
+
+<a href="https://www.buymeacoffee.com/erdemkly"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a pizza&emoji=🍕&slug=erdemkly&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" /></a>
+
 ## Installation
 
 ### Git
