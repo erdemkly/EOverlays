@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using EOverlays.Editor.Attributes;
+using UnityEditor.Compilation;
 using UnityEngine;
 using UnityEngine.UIElements;
 namespace EOverlays.Editor.Core
@@ -19,20 +20,40 @@ namespace EOverlays.Editor.Core
     }
     public static class EOverlayMethods
     {
-        internal static Dictionary<VisualElement, string> AllVisualElements()
+        private static Dictionary<VisualElement, EOverlayElementAttribute> _allVisualElements;
+        public static Dictionary<VisualElement, EOverlayElementAttribute> AllVisualElements
         {
-            var result = new Dictionary<VisualElement, string>();
-
-            //Find classes those inherited from EOverlayBase
-            var allEOverlayClasses = typeof(EOverlayMethods).Assembly.GetTypes();
-
-            var methods = new List<MethodInfo>();
-            foreach (var type in allEOverlayClasses)
+            get
             {
-                Debug.LogWarning(type.FullName);
-                var overlayMethods = type.GetMethods()
-                    .Where(method => method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute))).ToList();
-                methods.AddRange(overlayMethods);
+                if (_allVisualElements == null) AdjustAllVisualElements();
+                return _allVisualElements;
+            }
+        }
+
+        private static void AdjustAllVisualElements()
+        {
+            if (_allVisualElements != null) return;
+            _allVisualElements = new Dictionary<VisualElement, EOverlayElementAttribute>();
+
+            //Find classes those their methods have EOverlayElementAttribute
+            var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var methods = new List<MethodInfo>();
+
+            foreach (var assembly in allAssemblies)
+            {
+                var typesWithAttribute = assembly.GetTypes()
+                    .Where(type => type.GetMethods()
+                        .Any(method => method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
+                    );
+
+                foreach (var type in typesWithAttribute)
+                {
+                    Debug.LogWarning(type.FullName);
+                    var overlayMethods = type.GetMethods()
+                        .Where(method => method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
+                        .ToList();
+                    methods.AddRange(overlayMethods);
+                }
             }
 
             //Sort by Order value of own attribute
@@ -106,23 +127,18 @@ namespace EOverlays.Editor.Core
                     var property = method.DeclaringType.GetProperty(attribute.EnableCondition);
                     if (property != null && property.GetMethod.ReturnType == typeof(bool))
                     {
-                        var enabled = (bool)property.GetMethod.Invoke(new object(), new object[]
-                            { });
-                        if (!enabled) continue;
+                        attribute.EnableConditionProperty = property;
                     }
                 }
 
-                var name = attribute.Name;
                 if (visualElement == null) continue;
-                result.Add(visualElement, name);
+                _allVisualElements.Add(visualElement, attribute);
             }
 
-            if (!result.Any())
+            if (!_allVisualElements.Any())
             {
-                result.Add(new Label("Add new overlay to show in this place."), "NONE");
+                _allVisualElements.Add(new Label("Add new overlay to show in this place."), new EOverlayElementAttribute("NONE"));
             }
-
-            return result;
 
         }
     }

@@ -31,7 +31,7 @@ openupm add com.erdem.overlays
 
 ## Usage
 
-#### Your scripts must be children of the Editor folder & Editor folder must have Assembly Definition Reference of EOverlays.
+#### Your scripts must be children of the Editor folder.
 You can discover some usages from Samples in the package.
 
 ### Attribute

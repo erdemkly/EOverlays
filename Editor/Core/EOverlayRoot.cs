@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using EOverlays.Editor.Attributes;
 using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;
@@ -23,19 +24,27 @@ namespace EOverlays.Editor.Core
             _allContents = new HashSet<VisualElement>();
 
 
-            
+
             _root.Add(_navigationBar);
 
             _root.Add(_content);
-            
-            //Get all registered elements
-            var allVisualElements = EOverlayMethods.AllVisualElements();
-            
-            
-            foreach ((var visualElement, var name) in allVisualElements)
-            {
 
-                VisualElement groupBox = _allContents.FirstOrDefault(x => x.name == name);
+            //Get all registered elements
+            Dictionary<VisualElement, EOverlayElementAttribute> allVisualElements = EOverlayMethods.AllVisualElements;
+
+
+            foreach (var (visualElement, attribute) in allVisualElements)
+            {
+                //Hide disabled methods
+                if (attribute.EnableConditionProperty != null)
+                {
+                    var isEnabled = (bool)attribute.EnableConditionProperty.GetMethod.Invoke(new object(), new object[]
+                        { });
+                    if (!isEnabled) continue;
+                }
+                
+                var name = attribute.Name;
+                var groupBox = _allContents.FirstOrDefault(x => x.name == name);
                 groupBox ??= new GroupBox()
                 {
                     name = name,
@@ -64,7 +73,7 @@ namespace EOverlays.Editor.Core
             SelectTab(_selectedNavigationElement);
             return _root;
         }
-        private void SelectTab(string name)
+        private static void SelectTab(string name)
         {
             var element = _allContents.FirstOrDefault(x => x.name == name);
             if (element == null) element = _allContents.First();
