@@ -14,6 +14,9 @@ Paste this link to<br>
 
 ### Install via OpenUPM
 
+[![openupm](https://img.shields.io/npm/v/com.erdem.overlays?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.erdem.overlays/)
+[![openupm](https://img.shields.io/badge/dynamic/json?color=brightgreen&label=downloads&query=%24.downloads&suffix=%2Fmonth&url=https%3A%2F%2Fpackage.openupm.com%2Fdownloads%2Fpoint%2Flast-month%2Fcom.erdem.overlays)](https://openupm.com/packages/com.erdem.overlays/)
+
 The package is available on the [openupm registry](https://openupm.com). It's recommended to install it via [openupm-cli](https://github.com/openupm/openupm-cli).
 
 ```
