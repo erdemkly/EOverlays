@@ -54,7 +54,7 @@ namespace EOverlays.Editor.Core
                 });
                 return field;
             }
-            if (type == typeof(object))
+            if (type == typeof(Object))
             {
                 var field = new ObjectField();
                 field.RegisterValueChangedCallback((callback) =>
