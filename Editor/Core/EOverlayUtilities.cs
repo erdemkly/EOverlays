@@ -57,6 +57,7 @@ namespace EOverlays.Editor.Core
             if (type == typeof(Object))
             {
                 var field = new ObjectField();
+                field.objectType = typeof(Object);
                 field.RegisterValueChangedCallback((callback) =>
                 {
                     pair.Parameters[index] = callback.newValue;
@@ -170,6 +171,7 @@ namespace EOverlays.Editor.Core
             {
                 var field = new ObjectField
                 {
+                    objectType = typeof(Object),
                     value = (Object)value
                 };
 
