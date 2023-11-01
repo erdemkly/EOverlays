@@ -146,7 +146,11 @@ namespace EOverlays.Editor.Core
                     root.Add(fieldInfo.FieldType.GetVisualElementByType(null, -1, (newValue) =>
                     {
                         fieldValues[i1] = newValue;
-                        var genericType = Activator.CreateInstance(type, fieldValues);
+                        var genericType = Activator.CreateInstance(type);
+                        for (int j = 0; j < fields.Length; j++)
+                        {
+                            fields[j].SetValue(genericType, fieldValues[j]);
+                        }
                         pair.Parameters[index] = genericType;
                     }));
                 }
