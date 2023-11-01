@@ -55,7 +55,7 @@ Your methods must be static and public to work correctly.
   ```csharp
  void, int, float, double,
 long, Enum, Object, Vector2,
-Vector3, Vector2Int, Vector3Int, string, Color
+Vector3, Vector2Int, Vector3Int, string, Color, struct, class
 ```
 For now.
 
@@ -118,3 +118,16 @@ public static VisualElement MyMethod(){}
     }
 ```
 ![Return Method](./Document~/methodVisualElement.png)
+
+
+## NEW! SUPPORTS CLASSES & STRUCTS AS PARAMETER & RETURN TYPE
+
+```csharp
+    [EOverlayElement("Tab3")]
+    public static MyClass MethodWithParameters(MyClass myClass,Vector3 vector)
+    {
+        return myClass;
+    }
+```
+
+![Return Method](./Document~/methodParameterClass.png)
