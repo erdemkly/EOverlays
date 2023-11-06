@@ -2,7 +2,7 @@
     "name": "EOverlays.Examples",
     "rootNamespace": "",
     "references": [
-        "GUID:5ce2c1d314811e44fa0669ea8479e12c"
+        "EOverlays"
     ],
     "includePlatforms": [
         "Editor"
