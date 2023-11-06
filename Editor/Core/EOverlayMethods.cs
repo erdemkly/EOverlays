@@ -48,7 +48,6 @@ namespace EOverlays.Editor.Core
 
                 foreach (var type in typesWithAttribute)
                 {
-                    Debug.LogWarning(type.FullName);
                     var overlayMethods = type.GetMethods()
                         .Where(method => method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
                         .ToList();
