@@ -10,6 +10,9 @@ EOverlays is an open-source project that I am developing in my free time. If you
 <a href="https://www.buymeacoffee.com/erdemkly"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a pizza&emoji=🍕&slug=erdemkly&button_colour=FFDD00&font_colour=000000&font_family=Poppins&outline_colour=000000&coffee_colour=ffffff" /></a>
 
 ## Installation
+### Asset Store
+
+You can install from [this](https://assetstore.unity.com/packages/tools/utilities/e-overlays-268776) link.
 
 ### Git
 
