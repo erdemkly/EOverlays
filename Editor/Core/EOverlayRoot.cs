@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.UIElements;
+
 namespace EOverlays.Editor.Core
 {
     [Overlay(typeof(SceneView), "E-Overlay", true)]
@@ -17,12 +18,13 @@ namespace EOverlays.Editor.Core
         private static VisualElement _navigationBar;
         private static string _selectedNavigationElement;
         private static Action<string> _selectTabAction;
+        public static Action RefreshUI;
+
         public override VisualElement CreatePanelContent()
         {
             _root.Clear();
             _content.Clear();
             _allContents = new HashSet<VisualElement>();
-
 
 
             _root.Add(_navigationBar);
@@ -42,7 +44,7 @@ namespace EOverlays.Editor.Core
                         { });
                     if (!isEnabled) continue;
                 }
-                
+
                 var name = attribute.Name;
                 var groupBox = _allContents.FirstOrDefault(x => x.name == name);
                 groupBox ??= new GroupBox()
@@ -70,9 +72,11 @@ namespace EOverlays.Editor.Core
                 };
                 _navigationBar.Add(navigationButton);
             }
+
             SelectTab(_selectedNavigationElement);
             return _root;
         }
+
         private static void SelectTab(string name)
         {
             var element = _allContents.FirstOrDefault(x => x.name == name);
@@ -82,9 +86,11 @@ namespace EOverlays.Editor.Core
             _selectedNavigationElement = name;
             _selectTabAction?.Invoke(element.name);
         }
+
         public override void OnCreated()
         {
             base.OnCreated();
+            RefreshUI += ReloadPanel;
             Selection.selectionChanged += SelectionChanged;
             _root = new GroupBox()
             {
@@ -113,14 +119,25 @@ namespace EOverlays.Editor.Core
                     maxHeight = 400,
                     flexDirection = FlexDirection.Column,
                 },
-
             };
-
         }
-        private void SelectionChanged()
+
+        public override void OnWillBeDestroyed()
+        {
+            base.OnWillBeDestroyed();
+
+            RefreshUI -= ReloadPanel;
+            Selection.selectionChanged -= SelectionChanged;
+        }
+
+        private void ReloadPanel()
         {
             CreatePanelContent();
         }
 
+        private void SelectionChanged()
+        {
+            RefreshUI?.Invoke();
+        }
     }
 }
