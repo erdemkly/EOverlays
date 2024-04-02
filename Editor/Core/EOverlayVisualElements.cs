@@ -6,7 +6,7 @@ namespace EOverlays.Editor.Core
 {
     internal static class EOverlayVisualElements
     {
-        internal static VisualElement NavigationBar(Action refreshAction)
+        internal static VisualElement NavigationBar()
         {
             var navigationBar = new ScrollView()
             {
@@ -17,7 +17,12 @@ namespace EOverlays.Editor.Core
                     flexDirection = FlexDirection.Column,
                 },
             };
-            var refreshButton = new Button(()=>refreshAction?.Invoke());
+            return navigationBar;
+        }
+
+        internal static VisualElement RefreshButton()
+        {
+            var refreshButton = new Button(EOverlayMethods.InvokeRefreshUI);
             refreshButton.Add(new Image
             {
                 image = EditorGUIUtility.IconContent("d_Refresh@2x").image,
@@ -26,8 +31,7 @@ namespace EOverlays.Editor.Core
             });
             refreshButton.style.width = 25;
             refreshButton.style.height = 25;
-            navigationBar.Add(refreshButton);
-            return navigationBar;
+            return refreshButton;
         }
     }
 }

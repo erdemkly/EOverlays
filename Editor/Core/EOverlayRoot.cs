@@ -18,11 +18,12 @@ namespace EOverlays.Editor.Core
         private static VisualElement _navigationBar;
         private static string _selectedNavigationElement;
         private static Action<string> _selectTabAction;
-        public static Action RefreshUI;
 
         public override VisualElement CreatePanelContent()
         {
             _root.Clear();
+
+            _root.Add(EOverlayVisualElements.RefreshButton());
             _content.Clear();
             _allContents = new HashSet<VisualElement>();
 
@@ -37,7 +38,6 @@ namespace EOverlays.Editor.Core
 
             foreach (var (visualElement, attribute) in allVisualElements)
             {
-
                 var name = attribute.Name;
                 var groupBox = _allContents.FirstOrDefault(x => x.name == name);
 
@@ -66,13 +66,14 @@ namespace EOverlays.Editor.Core
                 };
                 _navigationBar.Add(navigationButton);
             }
+
             SelectTab(_selectedNavigationElement);
             return _root;
         }
 
         private static void SelectTab(string name)
         {
-            if(_allContents.Count == 0)return;
+            if (_allContents.Count == 0) return;
             var element = _allContents.FirstOrDefault(x => x.name == name);
             if (element == null) element = _allContents.First();
             _content.Clear();
@@ -84,8 +85,7 @@ namespace EOverlays.Editor.Core
         public override void OnCreated()
         {
             base.OnCreated();
-            RefreshUI += ReloadPanel;
-            Selection.selectionChanged += SelectionChanged;
+            EOverlayMethods.RefreshUI += ReloadPanel;
             _root = new GroupBox()
             {
                 style =
@@ -104,25 +104,19 @@ namespace EOverlays.Editor.Core
                     maxHeight = 400,
                 }
             };
-            _navigationBar = EOverlayVisualElements.NavigationBar(ReloadPanel);
+            _navigationBar = EOverlayVisualElements.NavigationBar();
         }
 
         public override void OnWillBeDestroyed()
         {
             base.OnWillBeDestroyed();
 
-            RefreshUI -= ReloadPanel;
-            Selection.selectionChanged -= SelectionChanged;
+            EOverlayMethods.RefreshUI -= ReloadPanel;
         }
 
         private void ReloadPanel()
         {
             CreatePanelContent();
-        }
-
-        private void SelectionChanged()
-        {
-            RefreshUI?.Invoke();
         }
     }
 }

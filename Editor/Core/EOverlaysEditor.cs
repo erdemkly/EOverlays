@@ -18,30 +18,23 @@ namespace EOverlays.Editor.Core
 
         private void OnEnable()
         {
-            Selection.selectionChanged += SelectionChanged;
+            EOverlayMethods.RefreshUI += RefreshUI;
+        }
+
+        private void RefreshUI()
+        {
+            Repaint();
+            CreateGUI();
         }
 
         private void OnDisable()
         {
-            Selection.selectionChanged -= SelectionChanged;
-        }
-
-        private void SelectionChanged()
-        {
-            CreateGUI();
+            EOverlayMethods.RefreshUI -= RefreshUI;
         }
 
         [MenuItem("Window/EOverlays/Show")]
         public static void ShowExample()
         {
-            EOverlaysEditor wnd = GetWindow<EOverlaysEditor>();
-            wnd.titleContent = new GUIContent("E-Overlays Window");
-        }
-
-
-        public void CreateGUI()
-        {
-            rootVisualElement.style.flexDirection = FlexDirection.Row;
             _content = new ScrollView()
             {
                 verticalScrollerVisibility = ScrollerVisibility.AlwaysVisible,
@@ -51,8 +44,25 @@ namespace EOverlays.Editor.Core
                     flexGrow = 1
                 }
             };
-            _navigationBar = EOverlayVisualElements.NavigationBar(Repaint);
+            _navigationBar = EOverlayVisualElements.NavigationBar();
             _allContents = new HashSet<VisualElement>();
+            
+            
+            EOverlaysEditor wnd = GetWindow<EOverlaysEditor>();
+            wnd.titleContent = new GUIContent("E-Overlays Window");
+        }
+
+
+        public void CreateGUI()
+        {
+            rootVisualElement.Clear();
+            
+            rootVisualElement.Add(EOverlayVisualElements.RefreshButton());
+            
+            _content.Clear();
+            _navigationBar.Clear();
+            _allContents.Clear();
+            rootVisualElement.style.flexDirection = FlexDirection.Row;
 
 
             rootVisualElement.Add(_navigationBar);

@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using EOverlays.Editor.Attributes;
+using UnityEditor;
 using UnityEditor.Compilation;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Assembly = System.Reflection.Assembly;
 
 namespace EOverlays.Editor.Core
 {
@@ -29,16 +32,32 @@ namespace EOverlays.Editor.Core
         {
             get
             {
-                if (_allVisualElements == null) AdjustAllVisualElements();
+                if (_allVisualElements == null) InvokeRefreshUI();
                 return _allVisualElements;
             }
         }
 
-        private static void AdjustAllVisualElements()
-        {
-            if (_allVisualElements != null) return;
-            _allVisualElements = new Dictionary<VisualElement, EOverlayElementAttribute>();
+        public static event Action RefreshUI;
 
+        private static void SelectionChanged()
+        {
+            InvokeRefreshUI();
+        }
+
+        static EOverlayMethods()
+        {
+            Selection.selectionChanged += SelectionChanged;
+            InvokeRefreshUI();
+        }
+
+        public static async void InvokeRefreshUI()
+        {
+            await AdjustAllVisualElements(true);
+            RefreshUI?.Invoke();
+        }
+
+        private static Task<IOrderedEnumerable<MethodInfo>> FetchAllMethodInfoAsync()
+        {
             //Find classes those their methods have EOverlayElementAttribute
             var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
             var methods = new List<MethodInfo>();
@@ -63,6 +82,15 @@ namespace EOverlays.Editor.Core
             //Sort by Order value of own attribute
             IOrderedEnumerable<MethodInfo> orderedMethods = methods
                 .OrderBy(x => ((EOverlayElementAttribute)x.GetCustomAttribute(typeof(EOverlayElementAttribute))).Order);
+            return Task.FromResult(orderedMethods);
+        }
+
+        public async static Task AdjustAllVisualElements(bool forceRefresh = false)
+        {
+            if (_allVisualElements != null && !forceRefresh) return;
+            _allVisualElements = new Dictionary<VisualElement, EOverlayElementAttribute>();
+
+            var orderedMethods = await Task.Run(FetchAllMethodInfoAsync);
 
             //Convert methodinfo to visual element
             foreach (var method in orderedMethods)
@@ -157,6 +185,8 @@ namespace EOverlays.Editor.Core
                 _allVisualElements.Add(new Label("All elements hidden or there is no elements here."),
                     new EOverlayElementAttribute("NONE", 0, false));
             }
+
+            return;
         }
     }
 }
