@@ -6,21 +6,25 @@ using EOverlays.Editor.Attributes;
 using UnityEditor.Compilation;
 using UnityEngine;
 using UnityEngine.UIElements;
+
 namespace EOverlays.Editor.Core
 {
     public class MethodParameterPair
     {
         public MethodInfo MethodInfo;
         public object[] Parameters;
+
         public MethodParameterPair(MethodInfo methodInfo, object[] parameters)
         {
             MethodInfo = methodInfo;
             Parameters = parameters;
         }
     }
+
     public static class EOverlayMethods
     {
         private static Dictionary<VisualElement, EOverlayElementAttribute> _allVisualElements;
+
         public static Dictionary<VisualElement, EOverlayElementAttribute> AllVisualElements
         {
             get
@@ -49,7 +53,8 @@ namespace EOverlays.Editor.Core
                 foreach (var type in typesWithAttribute)
                 {
                     var overlayMethods = type.GetMethods()
-                        .Where(method => method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
+                        .Where(method =>
+                            method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
                         .ToList();
                     methods.AddRange(overlayMethods);
                 }
@@ -105,6 +110,7 @@ namespace EOverlays.Editor.Core
                             {
                                 visualElement.Remove(resultElement);
                             }
+
                             resultElement = method.ReturnType.GetVisualElementByTypeWithValue(returnMethod);
                             resultElement.name = "return-value";
                             resultElement.SetEnabled(false);
@@ -121,24 +127,36 @@ namespace EOverlays.Editor.Core
                         { }) as VisualElement;
                 }
 
+                //Hide disabled methods
                 if (attribute.EnableCondition != null && method.DeclaringType != null)
                 {
                     var property = method.DeclaringType.GetProperty(attribute.EnableCondition);
                     if (property != null && property.GetMethod.ReturnType == typeof(bool))
                     {
-                        attribute.EnableConditionProperty = property;
+                        attribute.Disabled = !(bool)property.GetMethod.Invoke(new object(), new object[] { });
+                    }
+
+                    var field = method.DeclaringType.GetField(attribute.EnableCondition);
+                    if (field != null && field.FieldType == typeof(bool))
+                    {
+                        attribute.Disabled = !(bool)field.GetValue(new object());
                     }
                 }
 
+                if (attribute.Disabled) continue;
+
+
                 if (visualElement == null) continue;
+
+
                 _allVisualElements.Add(visualElement, attribute);
             }
 
             if (!_allVisualElements.Any())
             {
-                _allVisualElements.Add(new Label("Add new overlay to show in this place."), new EOverlayElementAttribute("NONE"));
+                _allVisualElements.Add(new Label("All elements hidden or there is no elements here."),
+                    new EOverlayElementAttribute("NONE", 0, false));
             }
-
         }
     }
 }

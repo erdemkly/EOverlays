@@ -3,33 +3,61 @@ using System.Collections.Generic;
 using System.Linq;
 using EOverlays.Editor.Attributes;
 using UnityEditor;
-using UnityEditor.Overlays;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace EOverlays.Editor.Core
 {
-    [Overlay(typeof(SceneView), "E-Overlay", true)]
-    public class EOverlayRoot : Overlay
+    public class EOverlaysEditor : EditorWindow
     {
-        private static VisualElement _root;
         private static VisualElement _content;
         private static HashSet<VisualElement> _allContents;
         private static VisualElement _navigationBar;
         private static string _selectedNavigationElement;
         private static Action<string> _selectTabAction;
-        public static Action RefreshUI;
 
-        public override VisualElement CreatePanelContent()
+        private void OnEnable()
         {
-            _root.Clear();
-            _content.Clear();
+            Selection.selectionChanged += SelectionChanged;
+        }
+
+        private void OnDisable()
+        {
+            Selection.selectionChanged -= SelectionChanged;
+        }
+
+        private void SelectionChanged()
+        {
+            CreateGUI();
+        }
+
+        [MenuItem("Window/EOverlays/Show")]
+        public static void ShowExample()
+        {
+            EOverlaysEditor wnd = GetWindow<EOverlaysEditor>();
+            wnd.titleContent = new GUIContent("E-Overlays Window");
+        }
+
+
+        public void CreateGUI()
+        {
+            rootVisualElement.style.flexDirection = FlexDirection.Row;
+            _content = new ScrollView()
+            {
+                verticalScrollerVisibility = ScrollerVisibility.AlwaysVisible,
+                mode = ScrollViewMode.Vertical,
+                style =
+                {
+                    flexGrow = 1
+                }
+            };
+            _navigationBar = EOverlayVisualElements.NavigationBar(Repaint);
             _allContents = new HashSet<VisualElement>();
 
 
-            _root.Add(_navigationBar);
+            rootVisualElement.Add(_navigationBar);
 
-            _root.Add(_content);
+            rootVisualElement.Add(_content);
 
             //Get all registered elements
             Dictionary<VisualElement, EOverlayElementAttribute> allVisualElements = EOverlayMethods.AllVisualElements;
@@ -37,10 +65,8 @@ namespace EOverlays.Editor.Core
 
             foreach (var (visualElement, attribute) in allVisualElements)
             {
-
                 var name = attribute.Name;
                 var groupBox = _allContents.FirstOrDefault(x => x.name == name);
-
                 groupBox ??= new GroupBox()
                 {
                     name = name,
@@ -51,7 +77,7 @@ namespace EOverlays.Editor.Core
                 _allContents.Add(groupBox);
 
 
-                var navigationButton = _root.Q<Button>($"{name}");
+                var navigationButton = rootVisualElement.Q<Button>($"{name}");
                 if (navigationButton != null) continue;
                 navigationButton = new Button(() => SelectTab(name))
                 {
@@ -62,67 +88,25 @@ namespace EOverlays.Editor.Core
                 _selectTabAction += (n) =>
                 {
                     navigationButton.SetEnabled(n != name);
+                    navigationButton.style.textShadow = new StyleTextShadow(new TextShadow
+                        { blurRadius = 10, color = Color.black, offset = new Vector2(10, 10) });
                     navigationButton.style.color = n == name ? Color.green : Color.white;
                 };
                 _navigationBar.Add(navigationButton);
             }
+
             SelectTab(_selectedNavigationElement);
-            return _root;
         }
 
         private static void SelectTab(string name)
         {
-            if(_allContents.Count == 0)return;
+            if (_allContents.Count == 0) return;
             var element = _allContents.FirstOrDefault(x => x.name == name);
             if (element == null) element = _allContents.First();
             _content.Clear();
             _content.Add(element);
             _selectedNavigationElement = name;
             _selectTabAction?.Invoke(element.name);
-        }
-
-        public override void OnCreated()
-        {
-            base.OnCreated();
-            RefreshUI += ReloadPanel;
-            Selection.selectionChanged += SelectionChanged;
-            _root = new GroupBox()
-            {
-                style =
-                {
-                    maxHeight = 400,
-                    flexDirection = FlexDirection.Row
-                }
-            };
-            _content = new ScrollView()
-            {
-                verticalScrollerVisibility = ScrollerVisibility.AlwaysVisible,
-                mode = ScrollViewMode.Vertical,
-                style =
-                {
-                    width = 300,
-                    maxHeight = 400,
-                }
-            };
-            _navigationBar = EOverlayVisualElements.NavigationBar(ReloadPanel);
-        }
-
-        public override void OnWillBeDestroyed()
-        {
-            base.OnWillBeDestroyed();
-
-            RefreshUI -= ReloadPanel;
-            Selection.selectionChanged -= SelectionChanged;
-        }
-
-        private void ReloadPanel()
-        {
-            CreatePanelContent();
-        }
-
-        private void SelectionChanged()
-        {
-            RefreshUI?.Invoke();
         }
     }
 }
