@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 using EOverlays.Editor.Attributes;
 using UnityEditor;
@@ -26,18 +27,15 @@ namespace EOverlays.Editor.Core
 
     public static class EOverlayMethods
     {
+        private static string _selectedTabName;
+        private static bool _isBusy;
         private static Dictionary<VisualElement, EOverlayElementAttribute> _allVisualElements;
 
-        public static Dictionary<VisualElement, EOverlayElementAttribute> AllVisualElements
-        {
-            get
-            {
-                if (_allVisualElements == null) InvokeRefreshUI();
-                return _allVisualElements;
-            }
-        }
-
+        public static HashSet<VisualElement> allContents;
+        public static VisualElement navigationBar;
+        public static event Action<string> SelectTabAction;
         public static event Action RefreshUI;
+
 
         private static void SelectionChanged()
         {
@@ -52,42 +50,114 @@ namespace EOverlays.Editor.Core
 
         public static async void InvokeRefreshUI()
         {
+            if (_isBusy) return;
             await AdjustAllVisualElements(true);
+            AssignVisualElements();
             RefreshUI?.Invoke();
         }
 
-        private static Task<IOrderedEnumerable<MethodInfo>> FetchAllMethodInfoAsync()
+        public static void InvokeSelectTab(string name)
         {
-            //Find classes those their methods have EOverlayElementAttribute
-            var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-            var methods = new List<MethodInfo>();
+            if (string.IsNullOrWhiteSpace(name)) name = _selectedTabName;
 
-            foreach (var assembly in allAssemblies)
+            void SetButtonActive(Button button, bool active)
             {
-                var typesWithAttribute = assembly.GetTypes()
-                    .Where(type => type.GetMethods()
-                        .Any(method => method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
-                    );
-
-                foreach (var type in typesWithAttribute)
-                {
-                    var overlayMethods = type.GetMethods()
-                        .Where(method =>
-                            method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
-                        .ToList();
-                    methods.AddRange(overlayMethods);
-                }
+                button.SetEnabled(active);
+                button.style.color = !active ? Color.green : Color.white;
             }
 
-            //Sort by Order value of own attribute
-            IOrderedEnumerable<MethodInfo> orderedMethods = methods
-                .OrderBy(x => ((EOverlayElementAttribute)x.GetCustomAttribute(typeof(EOverlayElementAttribute))).Order);
-            return Task.FromResult(orderedMethods);
+            var oldButton = navigationBar.Q<Button>($"{_selectedTabName}");
+            SetButtonActive(oldButton, true);
+
+            var currentButton = navigationBar.Q<Button>($"{name}");
+            SetButtonActive(currentButton, false);
+
+
+            _selectedTabName = name;
+            SelectTabAction?.Invoke(name);
         }
+
+
+        private static async void AssignVisualElements()
+        {
+            if (navigationBar != null) return;
+            if (navigationBar == null) navigationBar = EOverlayVisualElements.NavigationBar();
+            allContents = new HashSet<VisualElement>();
+            navigationBar.Clear();
+            foreach (var (visualElement, attribute) in _allVisualElements)
+            {
+                var name = attribute.Name;
+                var groupBox = allContents.FirstOrDefault(x => x.name == name);
+
+                groupBox ??= new GroupBox()
+                {
+                    name = name,
+                };
+                groupBox.style.backgroundColor = new StyleColor(new Color(0.15f, 0.15f, 0.15f, 0.53f));
+                groupBox.Add(visualElement);
+
+                allContents.Add(groupBox);
+
+
+                _selectedTabName = name;
+                var navigationButton = navigationBar.Q<Button>($"{name}");
+                if (navigationButton != null) continue;
+                navigationButton = new Button(() => { InvokeSelectTab(name); })
+                {
+                    name = name,
+                    text = name,
+                };
+                navigationBar.Add(navigationButton);
+            }
+        }
+
+
+        private static Task<IOrderedEnumerable<MethodInfo>> FetchAllMethodInfoAsync()
+        {
+            try
+            {
+//Find classes those their methods have EOverlayElementAttribute
+                var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                var methods = new List<MethodInfo>();
+
+                foreach (var assembly in allAssemblies)
+                {
+                    var typesWithAttribute = assembly.GetTypes()
+                        .Where(type => type.GetMethods()
+                            .Any(method =>
+                                method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
+                        );
+
+                    foreach (var type in typesWithAttribute)
+                    {
+                        var overlayMethods = type.GetMethods()
+                            .Where(method =>
+                                method.IsStatic && Attribute.IsDefined(method, typeof(EOverlayElementAttribute)))
+                            .ToList();
+                        methods.AddRange(overlayMethods);
+                    }
+                }
+
+                //Sort by Order value of own attribute
+                IOrderedEnumerable<MethodInfo> orderedMethods = methods
+                    .OrderBy(x =>
+                        ((EOverlayElementAttribute)x.GetCustomAttribute(typeof(EOverlayElementAttribute))).Order);
+
+                return Task.FromResult(orderedMethods);
+            }
+            catch (OperationCanceledException)
+            {
+                Debug.LogError("Cancelled");
+                throw;
+            }
+        }
+
 
         public async static Task AdjustAllVisualElements(bool forceRefresh = false)
         {
             if (_allVisualElements != null && !forceRefresh) return;
+
+            _isBusy = true;
             _allVisualElements = new Dictionary<VisualElement, EOverlayElementAttribute>();
 
             var orderedMethods = await Task.Run(FetchAllMethodInfoAsync);
@@ -101,7 +171,10 @@ namespace EOverlays.Editor.Core
                 //Method visualization
                 if (method.ReturnType != typeof(VisualElement))
                 {
-                    visualElement = new GroupBox();
+                    visualElement = new GroupBox
+                    {
+                        style = { flexGrow = 1 }
+                    };
 
                     //Method parameters visualization
                     var parameters = method.GetParameters();
@@ -115,7 +188,7 @@ namespace EOverlays.Editor.Core
                             {
                                 backgroundColor = new StyleColor(new Color(0.49f, 0.49f, 0.49f, 0.47f)),
                                 flexDirection = FlexDirection.Column,
-                                flexGrow = 0,
+                                flexGrow = 1,
                                 flexShrink = 1,
                             },
                         };
@@ -186,7 +259,8 @@ namespace EOverlays.Editor.Core
                     new EOverlayElementAttribute("NONE", 0, false));
             }
 
-            return;
+
+            _isBusy = false;
         }
     }
 }
