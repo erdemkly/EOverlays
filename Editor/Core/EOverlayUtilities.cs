@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.Serialization;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -23,7 +24,7 @@ namespace EOverlays.Editor.Core
             return false;
         }
 
-        private static VisualElement GetArrayVisualElement(Type type, object[] parameterValues, int index,
+        private static VisualElement GetListVisualElement(Type type, object[] parameterValues, int index,
             Action<object[]> onValueChanged)
         {
             var root = new VisualElement();
@@ -32,6 +33,7 @@ namespace EOverlays.Editor.Core
                 text = "elements"
             };
             var intField = new IntegerField();
+
             intField.RegisterValueChangedCallback((callback) =>
             {
                 var array = new object[callback.newValue];
@@ -40,7 +42,8 @@ namespace EOverlays.Editor.Core
                 for (int i = 0; i < callback.newValue; i++)
                 {
                     var i1 = i;
-                    elements.Add(GetVisualElementByType(type.GetElementType(), parameterValues, index, (value) =>
+                    if (type.IsValueType) array[i1] = Activator.CreateInstance(type);
+                    elements.Add(GetVisualElementByType(type, parameterValues, index, (value) =>
                     {
                         array[i1] = value;
                         onValueChanged?.Invoke(array);
@@ -57,7 +60,8 @@ namespace EOverlays.Editor.Core
         {
             if (type.IsArray)
             {
-                var root = GetArrayVisualElement(type, parameterValues, index, (array) =>
+                var elementType = type.GetElementType();
+                var root = GetListVisualElement(elementType, parameterValues, index, (array) =>
                 {
                     Array arr = Array.CreateInstance(type.GetElementType()!, array.Length);
                     for (var i = 0; i < arr.Length; i++)
@@ -72,7 +76,21 @@ namespace EOverlays.Editor.Core
 
             if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
             {
-                ////////todo
+                var elementType = type.GetGenericArguments().Single();
+                var listType = type.GetGenericTypeDefinition();
+                var constructedListType = listType.MakeGenericType(elementType);
+                var root = GetListVisualElement(elementType, parameterValues, index, (array) =>
+                {
+                    var instance = (IList)Activator.CreateInstance(constructedListType);
+                    Debug.LogError(array.Length);
+                    for (var i = 0; i < array.Length; i++)
+                    {
+                        instance.Add(array[i]);
+                    }
+
+                    parameterValues[index] = instance;
+                });
+                return root;
             }
 
             if (type == typeof(bool))
