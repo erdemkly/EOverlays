@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using EOverlays.Editor.Attributes;
 using UnityEditor;
 using UnityEditor.Compilation;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
 using Assembly = System.Reflection.Assembly;
@@ -52,6 +53,7 @@ namespace EOverlays.Editor.Core
             {
                 button.SetEnabled(active);
                 button.style.color = !active ? Color.green : Color.white;
+                button.style.borderLeftColor = !active ? Color.green : Color.white;
             }
 
             var oldButton = navigationBar.Q<Button>($"{_selectedTabName}");
@@ -94,6 +96,10 @@ namespace EOverlays.Editor.Core
                 {
                     name = name,
                     text = name,
+                    style =
+                    {
+                        borderLeftColor = Color.white
+                    }
                 };
                 navigationBar.Add(navigationButton);
             }

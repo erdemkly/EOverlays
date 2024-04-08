@@ -28,11 +28,21 @@ namespace EOverlays.Editor.Core
             Action<object[]> onValueChanged)
         {
             var root = new VisualElement();
+            var groupBox = new GroupBox
+            {
+                style =
+                {
+                    flexDirection = FlexDirection.Row
+                }
+            };
             var elements = new Foldout
             {
-                text = "elements"
+                text = "elements",
             };
-            var intField = new IntegerField();
+            var intField = new IntegerField()
+            {
+                style = { maxHeight = 20, maxWidth = 80, flexGrow = 1 }
+            };
 
             intField.RegisterValueChangedCallback((callback) =>
             {
@@ -50,8 +60,9 @@ namespace EOverlays.Editor.Core
                     }));
                 }
             });
-            root.Add(intField);
-            root.Add(elements);
+            groupBox.Add(elements);
+            groupBox.Add(intField);
+            root.Add(groupBox);
             return root;
         }
 
@@ -63,7 +74,7 @@ namespace EOverlays.Editor.Core
                 var elementType = type.GetElementType();
                 var root = GetListVisualElement(elementType, parameterValues, index, (array) =>
                 {
-                    Array arr = Array.CreateInstance(type.GetElementType()!, array.Length);
+                    Array arr = Array.CreateInstance(elementType!, array.Length);
                     for (var i = 0; i < arr.Length; i++)
                     {
                         arr.SetValue(array[i], i);
@@ -82,7 +93,6 @@ namespace EOverlays.Editor.Core
                 var root = GetListVisualElement(elementType, parameterValues, index, (array) =>
                 {
                     var instance = (IList)Activator.CreateInstance(constructedListType);
-                    Debug.LogError(array.Length);
                     for (var i = 0; i < array.Length; i++)
                     {
                         instance.Add(array[i]);
