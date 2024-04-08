@@ -13,18 +13,6 @@ using Assembly = System.Reflection.Assembly;
 
 namespace EOverlays.Editor.Core
 {
-    public class MethodParameterPair
-    {
-        public MethodInfo MethodInfo;
-        public object[] Parameters;
-
-        public MethodParameterPair(MethodInfo methodInfo, object[] parameters)
-        {
-            MethodInfo = methodInfo;
-            Parameters = parameters;
-        }
-    }
-
     public static class EOverlayMethods
     {
         private static string _selectedTabName;
@@ -178,7 +166,7 @@ namespace EOverlays.Editor.Core
 
                     //Method parameters visualization
                     var parameters = method.GetParameters();
-                    var methodParameterPair = new MethodParameterPair(method, new object[parameters.Length]);
+                    var methodParameterPair = new object[parameters.Length];
                     for (var i = 0; i < parameters.Length; i++)
                     {
                         var parameter = parameters[i];
@@ -203,7 +191,7 @@ namespace EOverlays.Editor.Core
                     invokeButton.text = method.Name;
                     invokeButton.RegisterCallback<ClickEvent>((_) =>
                     {
-                        var returnMethod = method.Invoke(new object(), methodParameterPair.Parameters);
+                        var returnMethod = method.Invoke(new object(), methodParameterPair);
                         if (method.ReturnType != typeof(void))
                         {
                             var resultElement = visualElement.Children().FirstOrDefault(x => x.name == "return-value");

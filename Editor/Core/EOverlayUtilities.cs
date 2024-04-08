@@ -1,4 +1,7 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.Serialization;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -20,15 +23,64 @@ namespace EOverlays.Editor.Core
             return false;
         }
 
-        public static VisualElement GetVisualElementByType(this Type type, MethodParameterPair pair, int index,
+        private static VisualElement GetArrayVisualElement(Type type, object[] parameterValues, int index,
+            Action<object[]> onValueChanged)
+        {
+            var root = new VisualElement();
+            var elements = new Foldout
+            {
+                text = "elements"
+            };
+            var intField = new IntegerField();
+            intField.RegisterValueChangedCallback((callback) =>
+            {
+                var array = new object[callback.newValue];
+
+                elements.Clear();
+                for (int i = 0; i < callback.newValue; i++)
+                {
+                    var i1 = i;
+                    elements.Add(GetVisualElementByType(type.GetElementType(), parameterValues, index, (value) =>
+                    {
+                        array[i1] = value;
+                        onValueChanged?.Invoke(array);
+                    }));
+                }
+            });
+            root.Add(intField);
+            root.Add(elements);
+            return root;
+        }
+
+        public static VisualElement GetVisualElementByType(this Type type, object[] parameterValues, int index,
             Action<object> onChangedValue = null)
         {
+            if (type.IsArray)
+            {
+                var root = GetArrayVisualElement(type, parameterValues, index, (array) =>
+                {
+                    Array arr = Array.CreateInstance(type.GetElementType()!, array.Length);
+                    for (var i = 0; i < arr.Length; i++)
+                    {
+                        arr.SetValue(array[i], i);
+                    }
+
+                    parameterValues[index] = arr;
+                });
+                return root;
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                ////////todo
+            }
+
             if (type == typeof(bool))
             {
                 var field = new Toggle();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -39,7 +91,7 @@ namespace EOverlays.Editor.Core
                 var field = new IntegerField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -50,7 +102,7 @@ namespace EOverlays.Editor.Core
                 var field = new FloatField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -61,7 +113,7 @@ namespace EOverlays.Editor.Core
                 var field = new DoubleField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -72,7 +124,7 @@ namespace EOverlays.Editor.Core
                 var field = new LongField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -83,7 +135,7 @@ namespace EOverlays.Editor.Core
                 var field = new EnumField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -95,7 +147,7 @@ namespace EOverlays.Editor.Core
                 field.objectType = type;
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -106,7 +158,7 @@ namespace EOverlays.Editor.Core
                 var field = new Vector2Field();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -117,7 +169,7 @@ namespace EOverlays.Editor.Core
                 var field = new Vector3Field();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -128,7 +180,7 @@ namespace EOverlays.Editor.Core
                 var field = new Vector2IntField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -139,7 +191,7 @@ namespace EOverlays.Editor.Core
                 var field = new Vector3IntField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -150,7 +202,7 @@ namespace EOverlays.Editor.Core
                 var field = new TextField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -161,7 +213,7 @@ namespace EOverlays.Editor.Core
                 var field = new ColorField();
                 field.RegisterValueChangedCallback((callback) =>
                 {
-                    if (pair != null) pair.Parameters[index] = callback.newValue;
+                    if (parameterValues != null) parameterValues[index] = callback.newValue;
                     onChangedValue?.Invoke(callback.newValue);
                 });
                 return field;
@@ -189,7 +241,7 @@ namespace EOverlays.Editor.Core
                             fields[j].SetValue(genericType, fieldValues[j]);
                         }
 
-                        pair.Parameters[index] = genericType;
+                        parameterValues[index] = genericType;
                     }));
                 }
 
