@@ -53,12 +53,16 @@ namespace EOverlays.Editor.Core
                 {
                     var i1 = i;
                     if (type.IsValueType) array[i1] = Activator.CreateInstance(type);
-                    elements.Add(GetVisualElementByType(type, parameterValues, index, (value) =>
+                    elements.Add(GetVisualElementByType(type, array, i1, (value) =>
                     {
                         array[i1] = value;
-                        onValueChanged?.Invoke(array);
+                        parameterValues = array;
+                        onValueChanged?.Invoke(parameterValues);
                     }));
                 }
+
+                parameterValues = array;
+                onValueChanged?.Invoke(parameterValues);
             });
             groupBox.Add(elements);
             groupBox.Add(intField);
@@ -66,43 +70,33 @@ namespace EOverlays.Editor.Core
             return root;
         }
 
+        private static VisualElement GetListVisualElementWithValue(Type type, object[] values)
+        {
+            var root = new VisualElement();
+            var groupBox = new GroupBox
+            {
+                style =
+                {
+                    flexDirection = FlexDirection.Row
+                }
+            };
+            var elements = new Foldout
+            {
+                text = "elements",
+            };
+            for (int i = 0; i < values.Length; i++)
+            {
+                elements.Add(GetVisualElementByTypeWithValue(type, values[i]));
+            }
+
+            groupBox.Add(elements);
+            root.Add(groupBox);
+            return root;
+        }
+
         public static VisualElement GetVisualElementByType(this Type type, object[] parameterValues, int index,
             Action<object> onChangedValue = null)
         {
-            if (type.IsArray)
-            {
-                var elementType = type.GetElementType();
-                var root = GetListVisualElement(elementType, parameterValues, index, (array) =>
-                {
-                    Array arr = Array.CreateInstance(elementType!, array.Length);
-                    for (var i = 0; i < arr.Length; i++)
-                    {
-                        arr.SetValue(array[i], i);
-                    }
-
-                    parameterValues[index] = arr;
-                });
-                return root;
-            }
-
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
-            {
-                var elementType = type.GetGenericArguments().Single();
-                var listType = type.GetGenericTypeDefinition();
-                var constructedListType = listType.MakeGenericType(elementType);
-                var root = GetListVisualElement(elementType, parameterValues, index, (array) =>
-                {
-                    var instance = (IList)Activator.CreateInstance(constructedListType);
-                    for (var i = 0; i < array.Length; i++)
-                    {
-                        instance.Add(array[i]);
-                    }
-
-                    parameterValues[index] = instance;
-                });
-                return root;
-            }
-
             if (type == typeof(bool))
             {
                 var field = new Toggle();
@@ -247,6 +241,41 @@ namespace EOverlays.Editor.Core
                 return field;
             }
 
+            if (type.IsArray)
+            {
+                var elementType = type.GetElementType();
+                var root = GetListVisualElement(elementType, parameterValues, index, (array) =>
+                {
+                    Array arr = Array.CreateInstance(elementType!, array.Length);
+                    for (var i = 0; i < arr.Length; i++)
+                    {
+                        arr.SetValue(array[i], i);
+                    }
+
+                    parameterValues[index] = arr;
+                });
+                return root;
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var elementType = type.GetGenericArguments().Single();
+                var listType = type.GetGenericTypeDefinition();
+                var constructedListType = listType.MakeGenericType(elementType);
+                var root = GetListVisualElement(elementType, parameterValues, index, (array) =>
+                {
+                    var instance = (IList)Activator.CreateInstance(constructedListType);
+                    for (var i = 0; i < array.Length; i++)
+                    {
+                        instance.Add(array[i]);
+                    }
+
+                    parameterValues[index] = instance;
+                    onChangedValue?.Invoke(parameterValues);
+                });
+                return root;
+            }
+
             if (type.IsStructOrClass())
             {
                 var fields = type.GetFields();
@@ -255,22 +284,28 @@ namespace EOverlays.Editor.Core
                 {
                     text = "Properties"
                 };
+
+                void ValueChanged(object newValue, int i)
+                {
+                    fieldValues[i] = newValue;
+                    var genericType = Activator.CreateInstance(type);
+                    for (var j = 0; j < fieldValues.Length; j++)
+                    {
+                        fields[j].SetValue(genericType, fieldValues[j]);
+                    }
+
+                    parameterValues[index] = genericType;
+                    onChangedValue?.Invoke(genericType);
+                }
+
                 for (var i = 0; i < fields.Length; i++)
                 {
                     var i1 = i;
                     var fieldInfo = fields[i];
                     root.Add(new Label(fieldInfo.Name));
-                    root.Add(fieldInfo.FieldType.GetVisualElementByType(null, -1, (newValue) =>
-                    {
-                        fieldValues[i1] = newValue;
-                        var genericType = Activator.CreateInstance(type);
-                        for (int j = 0; j < fields.Length; j++)
-                        {
-                            fields[j].SetValue(genericType, fieldValues[j]);
-                        }
-
-                        parameterValues[index] = genericType;
-                    }));
+                    if (fieldInfo.GetType().IsValueType) fieldValues[i] = Activator.CreateInstance(fieldInfo.GetType());
+                    root.Add(fieldInfo.FieldType.GetVisualElementByType(fieldValues, i,
+                        (newValue) => { ValueChanged(newValue, i1); }));
                 }
 
 
@@ -347,14 +382,11 @@ namespace EOverlays.Editor.Core
                 return field;
             }
 
-            if (type == typeof(Object))
+            if (type.EqualsWithBaseType(typeof(Object)))
             {
-                var field = new ObjectField
-                {
-                    objectType = typeof(Object),
-                    value = (Object)value
-                };
-
+                var field = new ObjectField();
+                field.objectType = type;
+                field.value = (Object)value;
                 return field;
             }
 
@@ -416,6 +448,34 @@ namespace EOverlays.Editor.Core
                 };
 
                 return field;
+            }
+
+            if (type.IsArray)
+            {
+                var elementType = type.GetElementType();
+                var instance = (Array)value;
+                var arr = new object[instance.Length];
+                for (int i = 0; i < instance.Length; i++)
+                {
+                    arr[i] = instance.GetValue(i);
+                }
+
+                var root = GetListVisualElementWithValue(elementType, arr);
+                return root;
+            }
+
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var instance = (IList)value;
+                var arr = new object[instance.Count];
+                for (var i = 0; i < instance.Count; i++)
+                {
+                    arr[i] = instance[i];
+                }
+
+                var elementType = type.GetGenericArguments().Single();
+                var root = GetListVisualElementWithValue(elementType, arr);
+                return root;
             }
 
             if (type.IsValueType && !type.IsPrimitive || type.IsClass)
