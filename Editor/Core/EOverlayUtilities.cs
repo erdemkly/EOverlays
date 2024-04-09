@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -14,6 +15,7 @@ namespace EOverlays.Editor.Core
     {
         public static bool EqualsWithBaseType(this Type type, Type targetType)
         {
+            if (type.IsInterface) return false;
             var baseType = type;
             do
             {
@@ -276,10 +278,48 @@ namespace EOverlays.Editor.Core
                 return root;
             }
 
+
+            if (type.IsInterface)
+            {
+                List<Type> GetTypesOfInterfaceInheritors(Type t)
+                {
+                    if (!t.IsInterface) return null;
+                    var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+                    var result = new List<Type>();
+                    foreach (var allAssembly in allAssemblies)
+                    {
+                        result.AddRange(allAssembly.GetTypes()
+                            .Where(x => !x.IsInterface && !x.IsAbstract && t.IsAssignableFrom(x)));
+                    }
+
+                    return result;
+                }
+
+                var types = GetTypesOfInterfaceInheritors(type);
+                var root = new GroupBox();
+                var elements = new GroupBox();
+                var dropDown = new DropdownField();
+                dropDown.RegisterValueChangedCallback((callback) =>
+                {
+                    elements.Clear();
+                    var selectedType = types[dropDown.index];
+                    elements.Add(GetVisualElementByType(selectedType, parameterValues, index, (newValue) =>
+                    {
+                        parameterValues[index] = newValue;
+                        onChangedValue?.Invoke(parameterValues);
+                    }));
+                });
+                dropDown.choices = types.Select(x => x.Name.ToString()).ToList();
+                root.Add(dropDown);
+                root.Add(elements);
+                return root;
+            }
+
             if (type.IsStructOrClass())
             {
                 var fields = type.GetFields();
-                var fieldValues = new object[fields.Length];
+                var properties = type.GetProperties();
+                var fieldValues = new object[fields.Length + properties.Length];
                 var root = new Foldout()
                 {
                     text = "Properties"
@@ -289,9 +329,14 @@ namespace EOverlays.Editor.Core
                 {
                     fieldValues[i] = newValue;
                     var genericType = Activator.CreateInstance(type);
-                    for (var j = 0; j < fieldValues.Length; j++)
+                    for (var j = 0; j < fields.Length; j++)
                     {
                         fields[j].SetValue(genericType, fieldValues[j]);
+                    }
+
+                    for (var j = 0; j < properties.Length; j++)
+                    {
+                        properties[j].SetValue(genericType, fieldValues[j + fields.Length]);
                     }
 
                     parameterValues[index] = genericType;
@@ -301,10 +346,22 @@ namespace EOverlays.Editor.Core
                 for (var i = 0; i < fields.Length; i++)
                 {
                     var i1 = i;
-                    var fieldInfo = fields[i];
+                    var fieldInfo = fields[i1];
                     root.Add(new Label(fieldInfo.Name));
-                    if (fieldInfo.GetType().IsValueType) fieldValues[i] = Activator.CreateInstance(fieldInfo.GetType());
-                    root.Add(fieldInfo.FieldType.GetVisualElementByType(fieldValues, i,
+                    if (fieldInfo.GetType().IsValueType)
+                        fieldValues[i1] = Activator.CreateInstance(fieldInfo.GetType());
+                    root.Add(fieldInfo.FieldType.GetVisualElementByType(fieldValues, i1,
+                        (newValue) => { ValueChanged(newValue, i1); }));
+                }
+
+                for (var i = 0; i < properties.Length; i++)
+                {
+                    var i1 = i + fields.Length;
+                    var propertyInfo = properties[i];
+                    root.Add(new Label(propertyInfo.Name));
+                    if (propertyInfo.GetType().IsValueType)
+                        fieldValues[i1] = Activator.CreateInstance(propertyInfo.GetType());
+                    root.Add(propertyInfo.PropertyType.GetVisualElementByType(fieldValues, i1,
                         (newValue) => { ValueChanged(newValue, i1); }));
                 }
 
@@ -454,6 +511,7 @@ namespace EOverlays.Editor.Core
             {
                 var elementType = type.GetElementType();
                 var instance = (Array)value;
+                if (instance == null) return new VisualElement();
                 var arr = new object[instance.Length];
                 for (int i = 0; i < instance.Length; i++)
                 {
@@ -478,9 +536,30 @@ namespace EOverlays.Editor.Core
                 return root;
             }
 
-            if (type.IsValueType && !type.IsPrimitive || type.IsClass)
+            if (type.IsInterface)
+            {
+                var root = new GroupBox();
+                
+                var properties = type.GetProperties();
+                var elements = new Foldout()
+                {
+                    text = "Properties"
+                };
+                for (var i = 0; i < properties.Length; i++)
+                {
+                    var propertyInfo = properties[i];
+                    elements.Add(new Label(propertyInfo.Name));
+                    elements.Add(propertyInfo.PropertyType.GetVisualElementByTypeWithValue(propertyInfo.GetValue(value)));
+                }
+                
+                root.Add(elements);
+                return root;
+            }
+
+            if (type.IsStructOrClass())
             {
                 var fields = type.GetFields();
+                var properties = type.GetProperties();
                 var root = new Foldout()
                 {
                     text = "Properties"
@@ -490,6 +569,13 @@ namespace EOverlays.Editor.Core
                     var fieldInfo = fields[i];
                     root.Add(new Label(fieldInfo.Name));
                     root.Add(fieldInfo.FieldType.GetVisualElementByTypeWithValue(fieldInfo.GetValue(value)));
+                }
+
+                for (var i = 0; i < properties.Length; i++)
+                {
+                    var propertyInfo = properties[i];
+                    root.Add(new Label(propertyInfo.Name));
+                    root.Add(propertyInfo.PropertyType.GetVisualElementByTypeWithValue(propertyInfo.GetValue(value)));
                 }
 
                 return root;

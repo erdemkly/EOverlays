@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using EOverlays.Editor.Attributes;
 using UnityEditor;
+using UnityEditor.Callbacks;
 using UnityEditor.Compilation;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -68,7 +69,7 @@ namespace EOverlays.Editor.Core
         }
 
 
-        private static async void AssignVisualElements()
+        private static void AssignVisualElements()
         {
             if (navigationBar != null) return;
             if (navigationBar == null) navigationBar = EOverlayVisualElements.NavigationBar();
@@ -105,6 +106,14 @@ namespace EOverlays.Editor.Core
             }
         }
 
+        private static IOrderedEnumerable<MethodInfo> _fetchedMethodList;
+
+        [DidReloadScripts]
+        private static async void ScriptReloaded()
+        {
+            _fetchedMethodList = null;
+            _fetchedMethodList = await Task.Run(FetchAllMethodInfoAsync);
+        }
 
         private static Task<IOrderedEnumerable<MethodInfo>> FetchAllMethodInfoAsync()
         {
@@ -154,10 +163,13 @@ namespace EOverlays.Editor.Core
             _isBusy = true;
             _allVisualElements = new Dictionary<VisualElement, EOverlayElementAttribute>();
 
-            var orderedMethods = await Task.Run(FetchAllMethodInfoAsync);
-
+            while (_fetchedMethodList == null)
+            {
+                await Task.Yield();
+            }
+            
             //Convert methodinfo to visual element
-            foreach (var method in orderedMethods)
+            foreach (var method in _fetchedMethodList)
             {
                 VisualElement visualElement;
                 var attribute = ((EOverlayElementAttribute)method.GetCustomAttribute(typeof(EOverlayElementAttribute)));

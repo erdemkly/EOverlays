@@ -62,6 +62,12 @@ namespace EOverlays.Editor.Core
 
         private void SelectTab(string n)
         {
+            if (_content == null)
+            {
+                Init();
+                return;
+            }
+
             if (EOverlayMethods.allContents.Count == 0) return;
             var element = EOverlayMethods.allContents.FirstOrDefault(x => x.name == n);
             if (element == null) element = EOverlayMethods.allContents.First();
